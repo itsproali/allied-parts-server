@@ -120,6 +120,17 @@ const run = async () => {
       const result = await orderCollection.insertOne(details);
       res.send(result);
     });
+
+    // Get an user orders
+    app.get("/my-order", verifyJwt, async (req, res) => {
+      const uid = req.query.uid;
+      const query = { uid };
+      const result = await orderCollection
+        .find(query)
+        .sort({ _id: -1 })
+        .toArray();
+      res.send(result);
+    });
   } finally {
     // client.close()
   }

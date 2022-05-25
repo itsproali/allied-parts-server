@@ -22,6 +22,7 @@ const run = async () => {
     await client.connect();
     const partsCollection = client.db("AlliedParts").collection("parts");
     const userCollection = client.db("AlliedParts").collection("users");
+    const reviewCollection = client.db("AlliedParts").collection("reviews");
 
     // Create User
     app.put("/user/:uid", async (req, res) => {
@@ -57,12 +58,32 @@ const run = async () => {
       const result = await partsCollection.find({}).sort({ _id: -1 }).toArray();
       res.send(result);
     });
+
     // Get 3 parts
     app.get("/parts/3", async (req, res) => {
       const result = await partsCollection
         .find({})
         .sort({ _id: -1 })
         .limit(3)
+        .toArray();
+      res.send(result);
+    });
+
+    // Get all Review
+    app.get("/reviews", async (req, res) => {
+      const result = await reviewCollection
+        .find({})
+        .sort({ _id: -1 })
+        .toArray();
+      res.send(result);
+    });
+
+    // Get 6 review
+    app.get("/review/6", async (req, res) => {
+      const result = await reviewCollection
+        .find({})
+        .sort({ _id: -1 })
+        .limit(6)
         .toArray();
       res.send(result);
     });

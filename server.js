@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
@@ -20,6 +21,36 @@ const run = async () => {
   try {
     await client.connect();
     const partsCollection = client.db("AlliedParts").collection("parts");
+    const userCollection = client.db("AlliedParts").collection("users");
+
+    // Create User
+    app.put("/user/:uid", async (req, res) => {
+      let updateInfo = {};
+      const user = req.body;
+      const uid = req.params.uid;
+      const query = { uid };
+      const options = { upsert: true };
+      const existUser = await userCollection.findOne(query);
+      if (existUser) {
+        updateInfo = {
+          $set: existUser,
+        };
+      } else if (!user.role) {
+        user.role = "user";
+        updateInfo = {
+          $set: user,
+        };
+      } else {
+        updateInfo = {
+          $set: user,
+        };
+      }
+      const result = await userCollection.updateOne(query, updateInfo, options);
+      const token = jwt.sign({ uid }, process.env.SECRET_TOKEN, {
+        expiresIn: "12h",
+      });
+      res.send({ result, token });
+    });
 
     // Get all parts
     app.get("/parts", async (req, res) => {

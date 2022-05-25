@@ -39,6 +39,7 @@ const run = async () => {
     const partsCollection = client.db("AlliedParts").collection("parts");
     const userCollection = client.db("AlliedParts").collection("users");
     const reviewCollection = client.db("AlliedParts").collection("reviews");
+    const orderCollection = client.db("AlliedParts").collection("orders");
 
     // Create User
     app.put("/user/:uid", async (req, res) => {
@@ -110,6 +111,14 @@ const run = async () => {
       const query = { _id: { $in: [ObjectId(itemId)] } };
       const item = await partsCollection.findOne(query);
       res.send(item);
+    });
+
+    // Create an order
+    app.post("/order/:itemId", async (req, res) => {
+      const itemId = req.params.itemId;
+      const details = req.body;
+      const result = await orderCollection.insertOne(details);
+      res.send(result);
     });
   } finally {
     // client.close()

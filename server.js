@@ -87,6 +87,14 @@ const run = async () => {
         .toArray();
       res.send(result);
     });
+
+    // Get single item
+    app.get("/item/:itemId", async (req, res) => {
+      const itemId = req.params.itemId;
+      const query = { _id: { $in: [ObjectId(itemId)] } };
+      const item = await partsCollection.findOne(query);
+      res.send(item);
+    });
   } finally {
     // client.close()
   }

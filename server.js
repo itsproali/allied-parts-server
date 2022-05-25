@@ -26,7 +26,7 @@ const run = async () => {
     // Create User
     app.put("/user/:uid", async (req, res) => {
       let updateInfo = {};
-      const user = req.body;
+      const user = req.body.loggedUser;
       const uid = req.params.uid;
       const query = { uid };
       const options = { upsert: true };

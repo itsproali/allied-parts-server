@@ -10,6 +10,22 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// JWT Verification
+const verifyJwt = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "Unauthorized Access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.SECRET_TOKEN, (err, decoded) => {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden Access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+};
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@alliedcluster.blmq2.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -89,7 +105,7 @@ const run = async () => {
     });
 
     // Get single item
-    app.get("/item/:itemId", async (req, res) => {
+    app.get("/item/:itemId", verifyJwt, async (req, res) => {
       const itemId = req.params.itemId;
       const query = { _id: { $in: [ObjectId(itemId)] } };
       const item = await partsCollection.findOne(query);

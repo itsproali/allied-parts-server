@@ -218,8 +218,6 @@ const run = async () => {
       const result = await userCollection.updateOne(query, update, options);
       res.send(result);
     });
-
-    // slash added for fix heroku error
   } finally {
     // client.close()
   }

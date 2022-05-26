@@ -195,7 +195,7 @@ const run = async () => {
     });
 
     // Get All user
-    app.get("/users", verifyAdmin, async (req, res) => {
+    app.get("/users", verifyJwt, async (req, res) => {
       const query = {};
       const users = await userCollection.find(query).toArray();
       res.send(users);

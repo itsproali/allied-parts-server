@@ -17,7 +17,7 @@ const verifyJwt = async (req, res, next) => {
     return res.status(401).send({ message: "Unauthorized Access" });
   }
   const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.SECRET_TOKEN, (err, decoded) => {
+  await jwt.verify(token, process.env.SECRET_TOKEN, (err, decoded) => {
     if (err) {
       return res.status(403).send({ message: "Forbidden Access" });
     }
@@ -134,7 +134,7 @@ const run = async () => {
       res.send(result);
     });
 
-    // Get an user orders
+    // Get a single user orders
     app.get("/my-order", verifyJwt, async (req, res) => {
       const uid = req.query.uid;
       const query = { uid };
@@ -178,14 +178,14 @@ const run = async () => {
     });
 
     // Get All Orders
-    app.get("/orders", verifyAdmin, async (req, res) => {
+    app.get("/orders", verifyJwt, verifyAdmin, async (req, res) => {
       const query = {};
       const result = await orderCollection.find(query).toArray();
       res.send(result);
     });
 
     // Status Update
-    app.put("/shift/:orderId", verifyAdmin, async (req, res) => {
+    app.put("/shift/:orderId", verifyJwt, verifyAdmin, async (req, res) => {
       const orderId = req.params.orderId;
       const query = { _id: ObjectId(orderId) };
       const options = { upsert: false };
@@ -202,15 +202,20 @@ const run = async () => {
     });
 
     // Delete an user
-    app.delete("/delete-user/:uid", verifyAdmin, async (req, res) => {
-      const uid = req.params.uid;
-      const query = { _id: ObjectId(uid) };
-      const result = await userCollection.deleteOne(query);
-      res.send(result);
-    });
+    app.delete(
+      "/delete-user/:uid",
+      verifyJwt,
+      verifyAdmin,
+      async (req, res) => {
+        const uid = req.params.uid;
+        const query = { _id: ObjectId(uid) };
+        const result = await userCollection.deleteOne(query);
+        res.send(result);
+      }
+    );
 
     // Make Admin
-    app.put("/make-admin/:uid", verifyAdmin, async (req, res) => {
+    app.put("/make-admin/:uid", verifyJwt, verifyAdmin, async (req, res) => {
       const uid = req.params.uid;
       const query = { _id: ObjectId(uid) };
       const options = { upsert: false };

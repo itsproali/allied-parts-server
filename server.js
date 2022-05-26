@@ -144,9 +144,7 @@ const run = async () => {
     app.post("/add-review/:uid", verifyJwt, async (req, res) => {
       const uid = req.params.uid;
       const review = req.body.review;
-      console.log(uid, review);
       const exist = await reviewCollection.findOne({ uid });
-      console.log("exist", exist);
       if (exist) {
         return res.send({
           success: false,
@@ -156,6 +154,14 @@ const run = async () => {
         const result = await reviewCollection.insertOne(review);
         return res.send({ success: true, result });
       }
+    });
+
+    // Check Admin
+    app.get("/admin/:uid", verifyJwt, async (req, res) => {
+      const uid = req.params.uid;
+      const user = await userCollection.findOne({ uid });
+      const isAdmin = user?.role === "admin";
+      res.send({ admin: isAdmin });
     });
   } finally {
     // client.close()

@@ -40,6 +40,7 @@ const run = async () => {
     const userCollection = client.db("AlliedParts").collection("users");
     const reviewCollection = client.db("AlliedParts").collection("reviews");
     const orderCollection = client.db("AlliedParts").collection("orders");
+    const blogCollection = client.db("AlliedParts").collection("blogs");
 
     // Verify Admin
     const verifyAdmin = async (req, res, next) => {
@@ -220,6 +221,32 @@ const run = async () => {
       const query = { _id: ObjectId(uid) };
       const options = { upsert: false };
       const update = { $set: { role: "admin" } };
+      const result = await userCollection.updateOne(query, update, options);
+      res.send(result);
+    });
+
+    // Get Blogs
+    app.get("/blogs", async (req, res) => {
+      const query = {};
+      const result = await blogCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // Get user Details
+    app.get("/profile/:uid", verifyJwt, async (req, res) => {
+      const uid = req.params.uid;
+      const query = { uid };
+      const result = await userCollection.findOne(uid);
+      res.send(result);
+    });
+
+    // UPdate user data
+    app.put("/profile/:uid", verifyJwt, async (req, res) => {
+      const uid = req.params.uid;
+      const details = req.body.details;
+      const query = { _id: ObjectId(uid) };
+      const options = { upsert: false };
+      const update = { $set: details };
       const result = await userCollection.updateOne(query, update, options);
       res.send(result);
     });

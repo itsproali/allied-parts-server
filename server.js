@@ -133,11 +133,29 @@ const run = async () => {
     });
 
     // Delete an order
-    app.delete("/delete/:orderId", async (req, res) => {
+    app.delete("/delete/:orderId", verifyJwt, async (req, res) => {
       const orderId = req.params.orderId;
       const query = { _id: ObjectId(orderId) };
       const result = await orderCollection.deleteOne(query);
       res.send(result);
+    });
+
+    // Add Review
+    app.post("/add-review/:uid", verifyJwt, async (req, res) => {
+      const uid = req.params.uid;
+      const review = req.body.review;
+      console.log(uid, review);
+      const exist = await reviewCollection.findOne({ uid });
+      console.log("exist", exist);
+      if (exist) {
+        return res.send({
+          success: false,
+          message: "Your Review Already exist !",
+        });
+      } else {
+        const result = await reviewCollection.insertOne(review);
+        return res.send({ success: true, result });
+      }
     });
   } finally {
     // client.close()

@@ -41,6 +41,19 @@ const run = async () => {
     const reviewCollection = client.db("AlliedParts").collection("reviews");
     const orderCollection = client.db("AlliedParts").collection("orders");
 
+    // Verify Admin
+    const verifyAdmin = async (req, res, next) => {
+      const requesterUid = req.decoded.uid;
+      const requesterAccount = await userCollection.findOne({
+        uid: requesterUid,
+      });
+      if (requesterAccount.role === "admin") {
+        next();
+      } else {
+        res.status(401).send({ message: "Unauthorized Access" });
+      }
+    };
+
     // Create User
     app.put("/user/:uid", async (req, res) => {
       let updateInfo = {};
@@ -157,11 +170,28 @@ const run = async () => {
     });
 
     // Check Admin
-    app.get("/admin/:uid", verifyJwt, async (req, res) => {
+    app.get("/admin/:uid", async (req, res) => {
       const uid = req.params.uid;
       const user = await userCollection.findOne({ uid });
       const isAdmin = user?.role === "admin";
       res.send({ admin: isAdmin });
+    });
+
+    // Get All Orders
+    app.get("/orders", verifyJwt, verifyAdmin, async (req, res) => {
+      const query = {};
+      const result = await orderCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // Status Update
+    app.put("/shift/:orderId", async (req, res) => {
+      const orderId = req.params.orderId;
+      const query = { _id: ObjectId(orderId) };
+      const options = { upsert: false };
+      const update = { $set: { status: "Shifted" } };
+      const result = await orderCollection.updateOne(query, update, options);
+      res.send(result);
     });
   } finally {
     // client.close()

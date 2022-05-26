@@ -178,19 +178,44 @@ const run = async () => {
     });
 
     // Get All Orders
-    app.get("/orders", verifyJwt, verifyAdmin, async (req, res) => {
+    app.get("/orders", verifyAdmin, async (req, res) => {
       const query = {};
       const result = await orderCollection.find(query).toArray();
       res.send(result);
     });
 
     // Status Update
-    app.put("/shift/:orderId", async (req, res) => {
+    app.put("/shift/:orderId", verifyAdmin, async (req, res) => {
       const orderId = req.params.orderId;
       const query = { _id: ObjectId(orderId) };
       const options = { upsert: false };
       const update = { $set: { status: "Shifted" } };
       const result = await orderCollection.updateOne(query, update, options);
+      res.send(result);
+    });
+
+    // Get All user
+    app.get("/users", verifyAdmin, async (req, res) => {
+      const query = {};
+      const users = await userCollection.find(query).toArray();
+      res.send(users);
+    });
+
+    // Delete an user
+    app.delete("/delete-user/:uid", verifyAdmin, async (req, res) => {
+      const uid = req.params.uid;
+      const query = { _id: ObjectId(uid) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // Make Admin
+    app.put("/make-admin/:uid", verifyAdmin, async (req, res) => {
+      const uid = req.params.uid;
+      const query = { _id: ObjectId(uid) };
+      const options = { upsert: false };
+      const update = { $set: { role: "admin" } };
+      const result = await userCollection.updateOne(query, update, options);
       res.send(result);
     });
   } finally {

@@ -146,6 +146,20 @@ const run = async () => {
       res.send(result);
     });
 
+    // Paid an order
+    app.put("/payment/:orderId", async (req, res) => {
+      const orderId = req.params.orderId;
+      const query = { _id: ObjectId(orderId) };
+      const options = { upsert: false };
+      const updatePayment = { $set: { status: "Pending" } };
+      const result = await orderCollection.updateOne(
+        query,
+        updatePayment,
+        options
+      );
+      res.send(result);
+    });
+
     // Delete an order
     app.delete("/delete/:orderId", verifyJwt, async (req, res) => {
       const orderId = req.params.orderId;
@@ -215,6 +229,26 @@ const run = async () => {
       }
     );
 
+    // Add an item
+    app.post("/add-item", verifyJwt, verifyAdmin, async (req, res) => {
+      const item = req.body.item;
+      const result = await partsCollection.insertOne(item);
+      res.send(result);
+    });
+
+    // Delete an Item
+    app.delete(
+      "/delete-item/:itemId",
+      verifyJwt,
+      verifyAdmin,
+      async (req, res) => {
+        const itemId = req.params.itemId;
+        const query = { _id: ObjectId(itemId) };
+        const result = await partsCollection.deleteOne(query);
+        res.send(result);
+      }
+    );
+
     // Make Admin
     app.put("/make-admin/:uid", verifyJwt, verifyAdmin, async (req, res) => {
       const uid = req.params.uid;
@@ -236,15 +270,15 @@ const run = async () => {
     app.get("/profile/:uid", verifyJwt, async (req, res) => {
       const uid = req.params.uid;
       const query = { uid };
-      const result = await userCollection.findOne(uid);
+      const result = await userCollection.findOne(query);
       res.send(result);
     });
 
     // UPdate user data
-    app.put("/profile/:uid", verifyJwt, async (req, res) => {
+    app.put("/profile-update/:uid", async (req, res) => {
       const uid = req.params.uid;
       const details = req.body.details;
-      const query = { _id: ObjectId(uid) };
+      const query = { uid };
       const options = { upsert: false };
       const update = { $set: details };
       const result = await userCollection.updateOne(query, update, options);
@@ -262,5 +296,5 @@ app.get("/", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log("Turbo server is running on : ", port);
+  console.log("Allied server is running on : ", port);
 });

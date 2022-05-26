@@ -131,6 +131,14 @@ const run = async () => {
         .toArray();
       res.send(result);
     });
+
+    // Delete an order
+    app.delete("/delete/:orderId", async (req, res) => {
+      const orderId = req.params.orderId;
+      const query = { _id: ObjectId(orderId) };
+      const result = await orderCollection.deleteOne(query);
+      res.send(result);
+    });
   } finally {
     // client.close()
   }

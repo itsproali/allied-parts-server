@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const stripe = require("stripe")(process.env.PAYMENT_SECRET);
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -54,6 +55,18 @@ const run = async () => {
         res.status(401).send({ message: "Unauthorized Access" });
       }
     };
+
+    //
+    app.post("/create-payment-intent", verifyJwt, async (req, res) => {
+      const { price } = req.body;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({ clientSecret: paymentIntent.client_secret });
+    });
 
     // Create User
     app.put("/user/:uid", async (req, res) => {
@@ -146,12 +159,21 @@ const run = async () => {
       res.send(result);
     });
 
-    // Paid an order
-    app.put("/payment/:orderId", async (req, res) => {
+    // Get an order Details
+    app.get("/order/:orderId", verifyJwt, async (req, res) => {
       const orderId = req.params.orderId;
       const query = { _id: ObjectId(orderId) };
+      const order = await orderCollection.findOne(query);
+      res.send(order);
+    });
+
+    // Paid an order
+    app.put("/payment/:orderId", verifyJwt, async (req, res) => {
+      const orderId = req.params.orderId;
+      const transactionId = req.body.transactionId;
+      const query = { _id: ObjectId(orderId) };
       const options = { upsert: false };
-      const updatePayment = { $set: { status: "Pending" } };
+      const updatePayment = { $set: { status: "Pending", transactionId } };
       const result = await orderCollection.updateOne(
         query,
         updatePayment,
@@ -292,7 +314,7 @@ const run = async () => {
 run().catch(console.dir);
 
 app.get("/", async (req, res) => {
-  res.send("This is Turbo Server");
+  res.send("Let's Explore Allied Server");
 });
 
 app.listen(port, () => {

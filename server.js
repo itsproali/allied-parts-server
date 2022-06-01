@@ -56,7 +56,7 @@ const run = async () => {
       }
     };
 
-    //
+    // Create a payment Intent
     app.post("/create-payment-intent", verifyJwt, async (req, res) => {
       const { price } = req.body;
       const amount = price * 100;

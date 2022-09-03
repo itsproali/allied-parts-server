@@ -317,7 +317,7 @@ app.get("/", async (req, res) => {
   res.send("Let's Explore Allied Server");
 });
 
-app.all("*", (res, res) => {
+app.all("*", (req, res) => {
   res.send("Nothing Found");
 });
 

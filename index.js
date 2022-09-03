@@ -306,6 +306,11 @@ const run = async () => {
       const result = await userCollection.updateOne(query, update, options);
       res.send(result);
     });
+
+    //
+    app.all("*", (req, res) => {
+      res.status(404).send("404 Not Found");
+    });
   } finally {
     // client.close()
   }
@@ -315,10 +320,6 @@ run().catch(console.dir);
 
 app.get("/", async (req, res) => {
   res.send("Let's Explore Allied Server");
-});
-
-app.all("*", (req, res) => {
-  res.send("Nothing Found");
 });
 
 app.listen(port, () => {

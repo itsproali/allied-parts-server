@@ -317,6 +317,10 @@ app.get("/", async (req, res) => {
   res.send("Let's Explore Allied Server");
 });
 
+app.all("*", (res, res) => {
+  res.send("Nothing Found");
+});
+
 app.listen(port, () => {
   console.log("Allied server is running on : ", port);
 });
